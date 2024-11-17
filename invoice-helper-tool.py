@@ -1,9 +1,17 @@
 import sys
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QEvent, QObject
 from PyQt5.QtGui import QFont, QFontMetrics, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QTextEdit
 from PIL import ImageGrab
 import pytesseract
+
+class EscapeFilter(QObject):
+    """Event filter to handle the Escape key globally."""
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
+            QApplication.quit()  # Quit the application
+            return True  # Mark the event as handled
+        return super().eventFilter(obj, event)
 
 class DragSelection(QWidget):
     def __init__(self):
@@ -183,5 +191,9 @@ class TextDisplay(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    # Install the Escape filter globally
+    escape_filter = EscapeFilter()
+    app.installEventFilter(escape_filter)
+
     window = DragSelection()
     sys.exit(app.exec_())
